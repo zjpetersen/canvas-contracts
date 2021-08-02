@@ -1,0 +1,12 @@
+{
+  "name": "canvas-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "solidity-coverage": "^0.7.16"
+  }
+}
