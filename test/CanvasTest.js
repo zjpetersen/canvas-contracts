@@ -12,8 +12,8 @@ contract("Canvas", (accounts) => {
  let tokenId3 = 3;
  let tokenId4 = 4;
  let expectedOwner1;
- const SECTION_ID_NEG = -1;
- const SECTION_ID_INVALID = 7056;
+ const TILE_ID_NEG = -1;
+ const TILE_ID_INVALID = 7056;
  const PRICE_1 = "500000000000000000"; //.5 ether
  const PRICE_2 = "3000000000000000000"; //3 ether
  const PRICE_3 = "100000000000000000"; //.1 ether
@@ -35,9 +35,9 @@ contract("Canvas", (accounts) => {
  describe("test getting free tile", async () => {
   //  let expectedOwner;
    before("get a free tile", async () => {
-     await canvas.getSectionForFree(tokenId, { from: accounts[0] });
+     await canvas.getTileForFree(tokenId, { from: accounts[0] });
      expectedOwner = accounts[0];
-     await canvas.getSectionForFree(tokenId1, { from: accounts[1] });
+     await canvas.getTileForFree(tokenId1, { from: accounts[1] });
      expectedOwner1 = accounts[1];
    });
 
@@ -55,12 +55,12 @@ contract("Canvas", (accounts) => {
 
    it("cannot assign owner to already owned tile", async () => {
      await truffleAssert.reverts(
-       canvas.getSectionForFree(tokenId, { from: accounts[0] }));
+       canvas.getTileForFree(tokenId, { from: accounts[0] }));
    });
 
    it("cannot assign owner to already owned tile", async () => {
      await truffleAssert.reverts(
-       canvas.getSectionForFree(tokenId, { from: accounts[1] }));
+       canvas.getTileForFree(tokenId, { from: accounts[1] }));
    });
 
  });
@@ -160,7 +160,7 @@ contract("Canvas", (accounts) => {
    });
 
    it("can accept an offer when ask is lower", async () => {
-     await canvas.getSectionForFree(tokenId3, {from: accounts[0]});
+     await canvas.getTileForFree(tokenId3, {from: accounts[0]});
      await canvas.offer(tokenId3, {from: accounts[1], value: PRICE_1});
 
      let startingBalance0 = web3.utils.toBN(await web3.eth.getBalance(accounts[0]));
@@ -180,14 +180,14 @@ contract("Canvas", (accounts) => {
    });
 
    it("can accept the highest offer", async () => {
-     await canvas.getSectionForFree(tokenId4, {from: accounts[0]});
+     await canvas.getTileForFree(tokenId4, {from: accounts[0]});
      await canvas.offer(tokenId4, {from: accounts[2], value: PRICE_1});
      await canvas.offer(tokenId4, {from: accounts[1], value: PRICE_2});
      await canvas.offer(tokenId4, {from: accounts[3], value: PRICE_3});
      let startingBalance = web3.utils.toBN(await web3.eth.getBalance(accounts[0]));
 
      await canvas.ask(tokenId4, PRICE_1, {from: accounts[0]}); //Even though we're using a lower price, still take the highest (offer 2)
-     let offers = await canvas.getOffersForSection(tokenId4);
+     let offers = await canvas.getOffersForTile(tokenId4);
      let owner = await canvas.getOwner(tokenId4);
      let endingBalance = web3.utils.toBN(await web3.eth.getBalance(accounts[0]));
      let offerPrice = web3.utils.toBN(PRICE_2);
@@ -227,13 +227,13 @@ contract("Canvas", (accounts) => {
 
    it("Out of bounds check - ask", async () => {
      await truffleAssert.reverts(
-       canvas.ask(SECTION_ID_INVALID, PRICE_1, {from: accounts[0]})
+       canvas.ask(TILE_ID_INVALID, PRICE_1, {from: accounts[0]})
      );
    });
 
    it("Out of bounds check - removeAsk", async () => {
      await truffleAssert.reverts(
-       canvas.removeAsk(SECTION_ID_INVALID, {from: accounts[0]})
+       canvas.removeAsk(TILE_ID_INVALID, {from: accounts[0]})
      );
    });
 
@@ -248,10 +248,10 @@ contract("Canvas", (accounts) => {
     await canvas.removeAsk(tokenId1, {from: accounts[0]});
 
      await canvas.offer(tokenId, {from: accounts[1], value: PRICE_1});
-     let offers = await canvas.getOffersForSection(tokenId);
+     let offers = await canvas.getOffersForTile(tokenId);
 
      await canvas.offer(tokenId1, {from: accounts[1], value: PRICE_1});
-     let  offers2 = await canvas.getOffersForSection(tokenId1);
+     let  offers2 = await canvas.getOffersForTile(tokenId1);
 
      assert.equal(offers[0].amount, PRICE_1, "Offer price should be set correctly1");
      assert.equal(offers[0].offerer, accounts[1], "Offerer should be set correctly1");
@@ -271,7 +271,7 @@ contract("Canvas", (accounts) => {
      let startingBalance = web3.utils.toBN(await web3.eth.getBalance(accounts[1]));
 
      await canvas.removeOffer(tokenId, {from: accounts[1]});
-     let offers = await canvas.getOffersForSection(tokenId);
+     let offers = await canvas.getOffersForTile(tokenId);
 
      let endingBalance = web3.utils.toBN(await web3.eth.getBalance(accounts[1]));
      let offerPrice = web3.utils.toBN(PRICE_1);
@@ -283,11 +283,11 @@ contract("Canvas", (accounts) => {
    });
 
    it("can get a tile if offer matches ask", async () => {
-     await canvas.getSectionForFree(tokenId2, { from: accounts[2] });
+     await canvas.getTileForFree(tokenId2, { from: accounts[2] });
      await canvas.ask(tokenId2, PRICE_1, {from: accounts[2]});
 
      await canvas.offer(tokenId2, {from: accounts[1], value: PRICE_1});
-     let offers = await canvas.getOffersForSection(tokenId2);
+     let offers = await canvas.getOffersForTile(tokenId2);
      let owner = await canvas.getOwner(tokenId2);
      let ask = await canvas.getAsk(tokenId2);
 
@@ -329,21 +329,21 @@ contract("Canvas", (accounts) => {
 
    it("Out of bounds check - offer", async () => {
      await truffleAssert.reverts(
-       canvas.offer(SECTION_ID_INVALID, {from: accounts[0], value: PRICE_1})
+       canvas.offer(TILE_ID_INVALID, {from: accounts[0], value: PRICE_1})
      );
    });
 
    it("Out of bounds check - removeOffer", async () => {
      await truffleAssert.reverts(
-       canvas.removeOffer(SECTION_ID_INVALID, {from: accounts[0]})
+       canvas.removeOffer(TILE_ID_INVALID, {from: accounts[0]})
      );
    });
 
  });
 
-//  describe("test fetching sections", async () => {
-//    it("can fetch sections", async () => {
-//     //  const sections = await canvas.getSections({from :accounts[0]});
+//  describe("test fetching tiles", async () => {
+//    it("can fetch tiles", async () => {
+//     //  const tiles = await canvas.getTiles({from :accounts[0]});
 
 //     const ARR_LEN = 7056;
 //     const PAGES = 28;
@@ -355,22 +355,22 @@ contract("Canvas", (accounts) => {
 //     for (let i = 0; i < PAGES; i++) {
 //       // console.log("iterating");
 
-//       let x = await canvas.fetchSections(cursor, LENGTH);
+//       let x = await canvas.fetchTiles(cursor, LENGTH);
 //       result = result.concat(x);
 //       cursor += LENGTH;
 
 //       // console.log("result length: " + result.length);
 //       // console.log("cursor:" + cursor);
 //     }
-//      const section = result[tokenId];
+//      const tile = result[tokenId];
 
 
 //      assert.equal(result.length, 7056);
-//      assert.equal(section.owner, accounts[0]);
+//      assert.equal(tile.owner, accounts[0]);
 //    });
 
-  //  it("can fetch sections when length is too big", async () => {
-  //   //  const sections = await canvas.getSections({from :accounts[0]});
+  //  it("can fetch tiles when length is too big", async () => {
+  //   //  const tiles = await canvas.getTiles({from :accounts[0]});
 
   //   const ARR_LEN = 7056;
   //   const LENGTH = 100;
@@ -378,7 +378,7 @@ contract("Canvas", (accounts) => {
   //   let result = [];
   //   let cursor = ARR_LEN - 50;
 
-  //   let x = await canvas.fetchSections(cursor, LENGTH);
+  //   let x = await canvas.fetchTiles(cursor, LENGTH);
   //   result = result.concat(x);
 
   //   assert.equal(result.length, 50);

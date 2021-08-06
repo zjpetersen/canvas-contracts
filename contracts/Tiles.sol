@@ -33,7 +33,7 @@ contract Tiles is ERC721 {
     //Can be called directly or via a trading contract
     //Emits transfer
     //TODO rename
-    function getSectionsForFree(uint[] memory tokenIds, address sender) public {
+    function getTilesForFree(uint[] memory tokenIds, address sender) public {
         require(tokenIds.length > 0 && tokenIds.length < 20);
         for (uint i = 0; i < tokenIds.length; i++) {
             require(isValidToken(tokenIds[i]));
@@ -43,7 +43,7 @@ contract Tiles is ERC721 {
 
     //Can be called directly or via a trading contract
     //Emits a transfer
-    function getSectionForFree(uint tokenId, address sender) external {
+    function getTileForFree(uint tokenId, address sender) external {
         require(isValidToken(tokenId));
         _safeMint(sender, tokenId);
     }

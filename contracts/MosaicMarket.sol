@@ -2,6 +2,7 @@ pragma solidity ^0.8.4;
 
 import "./Tiles.sol";
 
+//TODO implement pull pattern
 contract MosaicMarket {
     Tiles tiles;
 
@@ -13,11 +14,10 @@ contract MosaicMarket {
     //key: tokenId, value: offers array
     mapping(uint => Offer[]) offerMap;
     uint[7056] public asks;
-    //offers for any section
+    //offers for any tiles
     // Offer[] globalOffers;
     address public admin;
 
-    event SectionPurchased(uint tokenId, address buyer, address seller, uint price);
     event AskUpdated(uint tokenId, address owner, uint ask);
     event ColorBytesUpdated(uint tokenId, address owner, bytes updatedColor);
     event OffersUpdated(uint tokenId, address offerer, uint offer, bool globalOffer);
@@ -44,25 +44,25 @@ contract MosaicMarket {
         return asks[tokenId];
     }
 
-    function getOffersForSection(uint tokenId) external view returns (Offer[] memory) {
+    function getOffersForTile(uint tokenId) external view returns (Offer[] memory) {
         isValidToken(tokenId);
 
         return offerMap[tokenId];
     }
 
-    function setInitialSections() public { //TODO Allow the contract owner to set initial sections in bulk
+    function setInitialTiles() public { //TODO Allow the contract owner to set initial tiles in bulk
 
     }
 
-    function getSectionsForFree(uint[] memory tokenIds) public {
+    function getTilesForFree(uint[] memory tokenIds) public {
         require(tokenIds.length > 0 && tokenIds.length < 20);
-        tiles.getSectionsForFree(tokenIds, msg.sender);
+        tiles.getTilesForFree(tokenIds, msg.sender);
     }
 
     //Emits a transfer
-    function getSectionForFree(uint tokenId) external {
+    function getTileForFree(uint tokenId) external {
         require(isValidToken(tokenId));
-        tiles.getSectionForFree(tokenId, msg.sender);
+        tiles.getTileForFree(tokenId, msg.sender);
     }
 
     //Trading functions
@@ -108,6 +108,8 @@ contract MosaicMarket {
         emit AskUpdated(tokenId, msg.sender, 0);
     }
 
+    //TODO there is a bug if already have an offer, then submit another offer=ask.  Will lock the funds of first offer.
+    //TODO refactor this to have offers be a map of id -> amount
     function offer(uint tokenId) external payable {
         require(isValidToken(tokenId));
         require(!isOwner(tokenId, msg.sender));
@@ -115,7 +117,7 @@ contract MosaicMarket {
         if (_ask != 0 && _ask < msg.value) {
             revert("There is already an ask lower than the offer, resend with the ask price");
         } else if (_ask != 0 && _ask == msg.value) { //Accept the offer right away
-            // addPendingReturn(msg.value - section.ask);
+            // addPendingReturn(msg.value - tiles.ask);
             updateOwner(tokenId, msg.sender, msg.value);
         } else {
             Offer[] storage offers = offerMap[tokenId];
