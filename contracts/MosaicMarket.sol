@@ -23,9 +23,10 @@ contract MosaicMarket {
     event OffersUpdated(uint tokenId, address offerer, uint offer, bool globalOffer);
 
 
-    constructor(address addr) {
+    constructor(address addr, uint[] memory tokenIds) {
         admin = msg.sender;
         tiles = Tiles(addr);
+        setInitialTiles(tokenIds); //Set initial tiles
     }
 
     function getOwner(uint tokenId) external view returns (address) {
@@ -50,8 +51,11 @@ contract MosaicMarket {
         return offerMap[tokenId];
     }
 
-    function setInitialTiles() public { //TODO Allow the contract owner to set initial tiles in bulk
-
+    function setInitialTiles(uint[] memory tokenIds) private {
+        require(tokenIds.length > 0 && msg.sender == admin);
+        for (uint i = 0; i < tokenIds.length; i++) {
+            tiles.getTileForFree(tokenIds[i], msg.sender);
+        }
     }
 
     function getTilesForFree(uint[] memory tokenIds) public {
@@ -173,7 +177,14 @@ contract MosaicMarket {
 
     //End trading functions
 
-    function setColorBytes(uint tokenId, bytes memory color) external {
+    function setColorBytesBulk(uint[] memory tokenIds, bytes[] memory colors) external {
+        require(tokenIds.length > 0 && tokenIds.length == colors.length);
+        for (uint i = 0; i < tokenIds.length; i++) {
+            setColorBytes(tokenIds[i], colors[i]);
+        }
+    }
+
+    function setColorBytes(uint tokenId, bytes memory color) public {
         require(isValidToken(tokenId));
         require(isOwner(tokenId, msg.sender));
         //TODO validate color string, also some check on color size.
