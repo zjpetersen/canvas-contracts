@@ -2,7 +2,6 @@ pragma solidity ^0.8.4;
 
 import "./Tiles.sol";
 
-//TODO implement pull pattern
 contract MosaicMarket {
     Tiles tiles;
 
@@ -14,6 +13,7 @@ contract MosaicMarket {
     //key: tokenId, value: offers array
     mapping(uint => Offer[]) offerMap;
     uint[7056] public asks;
+    mapping(address => uint) pendingWithdrawals;
     //offers for any tiles
     // Offer[] globalOffers;
     address public admin;
@@ -171,7 +171,7 @@ contract MosaicMarket {
         offers[position]=offers[offers.length-1];
         offers.pop();
 
-        payable(msg.sender).transfer(amount);
+        pendingWithdrawals[msg.sender] += amount;
         emit OffersUpdated(tokenId, msg.sender, 0, false);
     }
 
@@ -197,7 +197,14 @@ contract MosaicMarket {
         //This call will work because this contract has already been added as an approver
         asks[tokenId]=0;
         tiles.safeTransferFrom(oldOwner, newOwner, tokenId);
-        oldOwner.transfer(amount);
+        pendingWithdrawals[oldOwner] += amount;
+    }
+
+    function withdraw() external {
+        uint amount = pendingWithdrawals[msg.sender];
+        require(amount != 0);
+        pendingWithdrawals[msg.sender] = 0;
+        payable(msg.sender).transfer(amount);
     }
 
     function isValidToken(uint tokenId) private pure returns (bool) {
