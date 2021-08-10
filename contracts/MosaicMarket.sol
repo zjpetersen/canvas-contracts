@@ -1,9 +1,9 @@
 pragma solidity ^0.8.4;
 
-import "./Tiles.sol";
+import "./MosaicTiles.sol";
 
 contract MosaicMarket {
-    Tiles tiles;
+    MosaicTiles tiles;
 
     struct Offer {
         address payable offerer;
@@ -23,10 +23,10 @@ contract MosaicMarket {
     event OffersUpdated(uint tokenId, address offerer, uint offer, bool globalOffer);
 
 
-    constructor(address addr, uint[] memory tokenIds) {
+    constructor(address addr) {
         admin = msg.sender;
-        tiles = Tiles(addr);
-        setInitialTiles(tokenIds); //Set initial tiles
+        tiles = MosaicTiles(addr);
+        // setInitialTiles(tokenIds); //Set initial tiles
     }
 
     function getOwner(uint tokenId) external view returns (address) {
@@ -51,23 +51,23 @@ contract MosaicMarket {
         return offerMap[tokenId];
     }
 
-    function setInitialTiles(uint[] memory tokenIds) private {
-        require(tokenIds.length > 0 && msg.sender == admin);
-        for (uint i = 0; i < tokenIds.length; i++) {
-            tiles.getTileForFree(tokenIds[i], msg.sender);
-        }
-    }
+    // function setInitialTiles(uint[] memory tokenIds) private {
+    //     require(tokenIds.length > 0 && msg.sender == admin);
+    //     for (uint i = 0; i < tokenIds.length; i++) {
+    //         tiles.getTileForFree(tokenIds[i], msg.sender);
+    //     }
+    // }
 
-    function getTilesForFree(uint[] memory tokenIds) public {
-        require(tokenIds.length > 0 && tokenIds.length < 20);
-        tiles.getTilesForFree(tokenIds, msg.sender);
-    }
+    // function getTilesForFree(uint[] memory tokenIds) public {
+    //     require(tokenIds.length > 0 && tokenIds.length < 20);
+    //     tiles.getTilesForFree(tokenIds, msg.sender);
+    // }
 
-    //Emits a transfer
-    function getTileForFree(uint tokenId) external {
-        require(isValidToken(tokenId));
-        tiles.getTileForFree(tokenId, msg.sender);
-    }
+    // //Emits a transfer
+    // function getTileForFree(uint tokenId) external {
+    //     require(isValidToken(tokenId));
+    //     tiles.getTileForFree(tokenId, msg.sender);
+    // }
 
     //Trading functions
     function ask(uint tokenId, uint amount) external {
