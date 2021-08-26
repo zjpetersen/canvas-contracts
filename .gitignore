@@ -3,3 +3,5 @@ node_modules
 contracts/build
 seed/
 migrations/initialTiles.js
+coverage/
+coverage.json

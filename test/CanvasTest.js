@@ -31,6 +31,11 @@ contract("Canvas", (accounts) => {
      assert.equal(actualOwner, '0x0000000000000000000000000000000000000000', "The owner of the free tile should be empty");
    });
 
+   it("cannot get owner for invalid token", async () => {
+     await truffleAssert.reverts(
+       canvas.getOwner(TILE_ID_INVALID, { from: accounts[0] }));
+   });
+
  });
 
  describe("test getting free tile", async () => {
@@ -93,6 +98,13 @@ contract("Canvas", (accounts) => {
         canvas.mintTiles(tokenIds, {from: accounts[3]})
       );
    });
+
+   it("cannot bulk assign invalid tile", async () => {
+     let tokenIds = [TILE_ID_INVALID];
+      await truffleAssert.reverts(
+        canvas.mintTiles(tokenIds, {from: accounts[3]})
+      );
+   });
    
    it("cannot bulk assign empty array", async () => {
      let tokenIds = [];
@@ -138,6 +150,22 @@ contract("Canvas", (accounts) => {
       );
    })
 
+   it("cannot mint an existing tile", async () => {
+     let tokenId = 500;
+     let tokenIds = [500];
+      await truffleAssert.reverts(
+        canvas.mintTile(tokenId, {from: accounts[3]})
+      );
+      
+      await truffleAssert.reverts(
+        canvas.mintTile(tokenId, {from: accounts[1]})
+      );
+
+      await truffleAssert.reverts(
+        canvas.mintTiles(tokenIds, {from: accounts[3]})
+      );
+   })
+
    it("cannot assign invalid tile", async () => {
      let tokenId = 7056;
      let tokenId2 = 40000;
@@ -157,6 +185,34 @@ contract("Canvas", (accounts) => {
      const owner = await canvas.getOwner(tokenId1, {from :accounts[0]});
      
      assert.equal(owner, accounts[1], "Can access properties correctly");
+   });
+ });
+
+ describe("test get uri", async () => {
+   it("can get uri", async () => {
+     const uri = await canvas.tokenURI(tokenId1, {from :accounts[0]});
+     
+     assert.equal(uri, "localhost:4000/tile/metadata/1", "Can access properties correctly");
+   });
+ });
+
+ describe("test token exists", async () => {
+   it("can get true for existing token", async () => {
+     const result = await canvas.exists(tokenId1, {from :accounts[0]});
+     
+     assert.equal(result, true, "Can get true for existing token");
+   });
+
+   it("can get false for non existing token", async () => {
+     const result = await canvas.exists(5839, {from :accounts[0]});
+     
+     assert.equal(result, false, "Can get false for non existing token");
+   });
+
+   it("cannot check if invalid tile exists", async () => {
+      await truffleAssert.reverts(
+        canvas.exists(TILE_ID_INVALID, {from: accounts[0]})
+      );
    });
  });
 
@@ -182,9 +238,25 @@ contract("Canvas", (accounts) => {
        canvas.setColorBytes(tokenId1, expectedColor, { from: accounts[0] }));
    });
 
-   it("cannot set color for invalid token", async () => {
+   it("cannot set color for unminted token", async () => {
      await truffleAssert.reverts(
        canvas.setColorBytes(5678, expectedColor, { from: accounts[0] }));
+   });
+
+   it("cannot set color for invalid token", async () => {
+     await truffleAssert.reverts(
+       canvas.setColorBytes(TILE_ID_INVALID, expectedColor, { from: accounts[0] }));
+   });
+
+   it("cannot set color for very large color", async () => {
+
+     let expectedColor='0x';
+     let invalidLength = 5000;
+     for (let i = 0; i < invalidLength+1; i++) {
+       expectedColor+='abcd';
+     }
+     await truffleAssert.reverts(
+       canvas.setColorBytes(tokenId1, expectedColor, { from: accounts[1] }));
    });
 
    it("can set color for owner", async () => {
