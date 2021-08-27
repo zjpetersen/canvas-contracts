@@ -4,7 +4,8 @@ const fs = require('fs');
 
 
 module.exports = async (deployer) => {
-  await deployer.deploy(MosaicTiles, initialTiles.initialTileArray());
+  uri = "localhost:4000/tile/metadata/";
+  await deployer.deploy(MosaicTiles, initialTiles.initialTileArray(), uri);
   const tiles = await MosaicTiles.deployed();
   // tiles.addApprovedMarket(mosaicMarket.address);
 

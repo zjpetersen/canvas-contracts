@@ -8,18 +8,19 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     as to update the color of the tile.
  */
 contract MosaicTiles is ERC721 {
-    address approvedMarket;
     address admin;
     uint maxColorSize;
+    string uri;
 
     /**
      * @dev Emitted when `owner` changes the `tokenId` color to `updatedColor`.
      */ 
     event ColorBytesUpdated(uint tokenId, address owner, bytes updatedColor);
 
-    constructor(uint[] memory tokenIds) ERC721("Tiles", "TIL") {
+    constructor(uint[] memory tokenIds, string memory uriIn) ERC721("Tiles", "TIL") {
         admin = msg.sender;
         maxColorSize = 5000;
+        uri = uriIn;
         _setInitialTiles(tokenIds); //Set initial tiles
     }
 
@@ -52,7 +53,7 @@ contract MosaicTiles is ERC721 {
      * @dev Mints new tiles for all `tokenIds` if it doesn't already exist.
      * Emits a {Transfer} event.
      */
-    function mintTiles(uint[] memory tokenIds) public {
+    function mintTiles(uint[] memory tokenIds) external {
         require(tokenIds.length > 0 && tokenIds.length <= 20);
         require(balanceOf(msg.sender) + tokenIds.length <= 100);
         for (uint i = 0; i < tokenIds.length; i++) {
@@ -65,7 +66,7 @@ contract MosaicTiles is ERC721 {
      * @dev Mints new tile for `tokenId` if it doesn't already exist.
      * Emits a {Transfer} event.
      */
-    function mintTile(uint tokenId) public {
+    function mintTile(uint tokenId) external {
         require(balanceOf(msg.sender) < 100);
         require(_isValidToken(tokenId));
         _safeMint(msg.sender, tokenId);
@@ -74,8 +75,8 @@ contract MosaicTiles is ERC721 {
     /**
      * @dev Overriding URI from {ERC721-_baseURI}.  Used to display the NFT metadata.
      */
-    function _baseURI() override internal pure returns (string memory) {
-        return "localhost:4000/tile/metadata/";
+    function _baseURI() override internal view returns (string memory) {
+        return uri;
     }
 
     /**
@@ -120,8 +121,11 @@ contract MosaicTiles is ERC721 {
         return _exists(tokenId);
     }
 
+    /**
+     * @dev Tokens 0 - 7055 are valid
+     */
     function _isValidToken(uint tokenId) private pure returns (bool) {
-        return tokenId >= 0 && tokenId < 7056;
+        return tokenId < 7056;
     }
 
     function _isOwner(uint tokenId, address addr) private view returns (bool){
