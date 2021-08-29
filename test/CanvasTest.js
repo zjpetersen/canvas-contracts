@@ -29,7 +29,7 @@ contract("Canvas", (accounts) => {
 
  });
 
- describe("test getting free tile", async () => {
+ describe("test minting tiles", async () => {
    before("get a free tile", async () => {
      await canvas.mintTile(tokenId, { from: accounts[0] });
      expectedOwner = accounts[0];
@@ -48,6 +48,14 @@ contract("Canvas", (accounts) => {
      const actualOwner = await canvas.getOwner(tokenId1);
 
      assert.equal(actualOwner, expectedOwner1, "The owner of the free tile should be second account");
+   });
+
+   it("can reserve mint for admin", async () => {
+     let tokenIds = [6002,6003];
+     await canvas.mintReserved(tokenIds, { from: accounts[0] });
+     expectedOwner = accounts[0];
+     const actualOwner = await canvas.getOwner(tokenIds[0]);
+     assert.equal(actualOwner, expectedOwner, "The owner of the reserved tile should be account 0");
    });
 
    it("cannot assign owner to already owned tile", async () => {
@@ -88,6 +96,7 @@ contract("Canvas", (accounts) => {
         canvas.mintTiles(tokenIds, {from: accounts[3]})
       );
    });
+
 
    it("cannot bulk assign invalid tile", async () => {
      let tokenIds = [TILE_ID_INVALID];
@@ -153,6 +162,31 @@ contract("Canvas", (accounts) => {
 
       await truffleAssert.reverts(
         canvas.mintTiles(tokenIds, {from: accounts[3]})
+      );
+   })
+
+   it("cannot mint a reserved tile", async () => {
+     let tokenId = 6000;
+     let tokenId2 = 6300;
+      await truffleAssert.reverts(
+        canvas.mintTile(tokenId, {from: accounts[3]})
+      );
+      
+      await truffleAssert.reverts(
+        canvas.mintTile(tokenId2, {from: accounts[0]})
+      );
+   })
+
+   it("cannot mint reserved for non admin", async () => {
+     let tokenId = [6010];
+      await truffleAssert.reverts(
+        canvas.mintReserved(tokenId, {from: accounts[3]})
+      );
+   })
+
+   it("cannot mint reserved invalid tile", async () => {
+      await truffleAssert.reverts(
+        canvas.mintReserved([TILE_ID_INVALID], {from: accounts[3]})
       );
    })
 

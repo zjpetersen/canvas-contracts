@@ -11,29 +11,34 @@ contract CryptoCanvas is ERC721 {
     address admin;
     uint maxColorSize;
     string uri;
+    uint reservedStart;
+    uint reservedEnd;
 
     /**
      * @dev Emitted when `owner` changes the `tokenId` color to `updatedColor`.
      */ 
     event ColorBytesUpdated(uint tokenId, address owner, bytes updatedColor);
 
-    constructor(uint[] memory tokenIds, string memory uriIn) ERC721("Tiles", "TIL") {
+    /**
+     * @dev Emitted when a tile is reserved on initialization
+     */ 
+    event Reserved(uint start, uint end, address owner);
+
+    constructor(uint start, uint end, string memory uriIn) ERC721("Tiles", "TIL") {
         admin = msg.sender;
         maxColorSize = 5000;
         uri = uriIn;
-        _setInitialTiles(tokenIds); //Set initial tiles
+        _reserveTiles(start, end);
     }
-
     /**
-     * @dev Mints the initial set of tiles on contract creation.
+     * @dev Reserves an initial set of tiles to be minted later
      */
-    function _setInitialTiles(uint[] memory tokenIds) private {
-        // require(tokenIds.length > 0 && msg.sender == admin);
-        for (uint i = 0; i < tokenIds.length; i++) {
-            require(_isValidToken(tokenIds[i]));
-            _safeMint(msg.sender, tokenIds[i]);
-        }
-    }
+     function _reserveTiles(uint start, uint end) private {
+        require(start < end && end < 7056);
+        reservedStart = start;
+        reservedEnd = end;
+        emit Reserved(start, end, msg.sender);
+     }
 
     /**
      * @dev Returns the owner of the tile, or the empty address if no
@@ -69,7 +74,17 @@ contract CryptoCanvas is ERC721 {
     function mintTile(uint tokenId) external {
         require(balanceOf(msg.sender) < 100);
         require(_isValidToken(tokenId));
+        require(tokenId < reservedStart || tokenId > reservedEnd);
         _safeMint(msg.sender, tokenId);
+    }
+
+    function mintReserved(uint[] memory tokenIds) external {
+        require(msg.sender == admin);
+        for (uint i = 0; i < tokenIds.length; i++) {
+            require(_isValidToken(tokenIds[i]));
+            _safeMint(msg.sender, tokenIds[i]);
+        }
+
     }
 
     /**
