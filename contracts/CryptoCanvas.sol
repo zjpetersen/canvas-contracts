@@ -24,10 +24,10 @@ contract CryptoCanvas is ERC721 {
      */ 
     event Reserved(uint start, uint end, address owner);
 
-    constructor(uint start, uint end, string memory uriIn) ERC721("Tiles", "TIL") {
+    constructor(uint start, uint end, string memory _uri) ERC721("Tiles", "TIL") {
         admin = msg.sender;
         maxColorSize = 5000;
-        uri = uriIn;
+        uri = _uri;
         _reserveTiles(start, end);
     }
     /**
@@ -56,28 +56,24 @@ contract CryptoCanvas is ERC721 {
 
     /**
      * @dev Mints new tiles for all `tokenIds` if it doesn't already exist.
-     * Emits a {Transfer} event.
+     * Emits a {Transfer} event for each tokenId.
      */
-    function mintTiles(uint[] memory tokenIds) external {
+    function mintTiles(uint[] memory tokenIds, address toAddress) external {
+        require(msg.sender == admin || isApprovedForAll(admin, msg.sender), "Must be owner or approved address");
         require(tokenIds.length > 0 && tokenIds.length <= 20);
-        require(balanceOf(msg.sender) + tokenIds.length <= 100);
+        require(balanceOf(toAddress) + tokenIds.length <= 100);
         for (uint i = 0; i < tokenIds.length; i++) {
             require(_isValidToken(tokenIds[i]));
-            _safeMint(msg.sender, tokenIds[i]);
+            require(tokenIds[i] < reservedStart || tokenIds[i] > reservedEnd);
+            _safeMint(toAddress, tokenIds[i]);
         }
     }
 
     /**
-     * @dev Mints new tile for `tokenId` if it doesn't already exist.
-     * Emits a {Transfer} event.
+     * @dev Mint reserved tiles.
+     *
+     * Requires caller to be the admin
      */
-    function mintTile(uint tokenId) external {
-        require(balanceOf(msg.sender) < 100);
-        require(_isValidToken(tokenId));
-        require(tokenId < reservedStart || tokenId > reservedEnd);
-        _safeMint(msg.sender, tokenId);
-    }
-
     function mintReserved(uint[] memory tokenIds) external {
         require(msg.sender == admin);
         for (uint i = 0; i < tokenIds.length; i++) {

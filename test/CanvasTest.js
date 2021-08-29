@@ -31,9 +31,9 @@ contract("Canvas", (accounts) => {
 
  describe("test minting tiles", async () => {
    before("get a free tile", async () => {
-     await canvas.mintTile(tokenId, { from: accounts[0] });
+     await canvas.mintTiles([tokenId], accounts[0], { from: accounts[0] });
      expectedOwner = accounts[0];
-     await canvas.mintTile(tokenId1, { from: accounts[1] });
+     await canvas.mintTiles([tokenId1], accounts[1], { from: accounts[0] });
      expectedOwner1 = accounts[1];
      expectedOwner3 = accounts[3];
    });
@@ -60,18 +60,19 @@ contract("Canvas", (accounts) => {
 
    it("cannot assign owner to already owned tile", async () => {
      await truffleAssert.reverts(
-       canvas.mintTile(tokenId, { from: accounts[0] }));
+       canvas.mintTiles([tokenId], accounts[0], { from: accounts[0] }));
    });
 
    it("cannot assign owner to already owned tile", async () => {
      await truffleAssert.reverts(
-       canvas.mintTile(tokenId, { from: accounts[1] }));
+       canvas.mintTiles([tokenId], accounts[1], { from: accounts[1] }));
    });
 
    it("can bulk assign owner to free tile properly", async () => {
+     await canvas.setApprovalForAll(accounts[3], true);
      let tokenIds = [50,51,52,53,54,55,56,57,58,59,
                 60,61,62,63,64,65,66,67,68,69];
-     await canvas.mintTiles(tokenIds, { from: accounts[3] });
+     await canvas.mintTiles(tokenIds, accounts[3], { from: accounts[3] });
      const actualOwner = await canvas.getOwner(50);
      const actualOwner2 = await canvas.getOwner(55);
      const actualOwner3 = await canvas.getOwner(69);
@@ -83,7 +84,7 @@ contract("Canvas", (accounts) => {
 
    it("can bulk assign single tile", async () => {
      let tokenIds = [200];
-     await canvas.mintTiles(tokenIds, { from: accounts[0] });
+     await canvas.mintTiles(tokenIds, accounts[0], { from: accounts[0] });
      const actualOwner = await canvas.getOwner(200);
 
      assert.equal(actualOwner, expectedOwner, "The owner of the free tile should be first account");
@@ -93,7 +94,7 @@ contract("Canvas", (accounts) => {
      let tokenIds = [50,51,52,53,54,55,56,57,58,59,
                 60,61,62,63,64,65,66,67,68,69,70];
       await truffleAssert.reverts(
-        canvas.mintTiles(tokenIds, {from: accounts[3]})
+        canvas.mintTiles(tokenIds, accounts[3], {from: accounts[3]})
       );
    });
 
@@ -101,14 +102,14 @@ contract("Canvas", (accounts) => {
    it("cannot bulk assign invalid tile", async () => {
      let tokenIds = [TILE_ID_INVALID];
       await truffleAssert.reverts(
-        canvas.mintTiles(tokenIds, {from: accounts[3]})
+        canvas.mintTiles(tokenIds, accounts[3], {from: accounts[3]})
       );
    });
    
    it("cannot bulk assign empty array", async () => {
      let tokenIds = [];
       await truffleAssert.reverts(
-        canvas.mintTiles(tokenIds, {from: accounts[3]})
+        canvas.mintTiles(tokenIds, accounts[3], {from: accounts[3]})
       );
    })
 
@@ -121,10 +122,10 @@ contract("Canvas", (accounts) => {
                 620,621,622,623,624,625,626,627,628,629];
      let tokenIds4 = [530,531,532,533,534,535,536,537,0,7055,
                 630,631,632,633,634,635,636,637,638,639];
-     await canvas.mintTiles(tokenIds, { from: accounts[3] });
-     await canvas.mintTiles(tokenIds2, { from: accounts[3] });
-     await canvas.mintTiles(tokenIds3, { from: accounts[3] });
-     await canvas.mintTiles(tokenIds4, { from: accounts[3] });
+     await canvas.mintTiles(tokenIds, accounts[3], { from: accounts[3] });
+     await canvas.mintTiles(tokenIds2, accounts[3], { from: accounts[3] });
+     await canvas.mintTiles(tokenIds3, accounts[3], { from: accounts[3] });
+     await canvas.mintTiles(tokenIds4, accounts[3], { from: accounts[3] });
 
      const actualOwner = await canvas.getOwner(509);
      const actualOwner2 = await canvas.getOwner(639);
@@ -133,11 +134,11 @@ contract("Canvas", (accounts) => {
      assert.equal(actualOwner2, expectedOwner3, "The owner of the free tile should be first account");
 
       await truffleAssert.reverts(
-        canvas.mintTiles([1000], {from: accounts[3]})
+        canvas.mintTiles([1000], accounts[3], {from: accounts[3]})
       );
 
       await truffleAssert.reverts(
-        canvas.mintTile(1000, {from: accounts[3]})
+        canvas.mintTiles([1000], accounts[3], {from: accounts[3]})
       );
    });
    
@@ -145,23 +146,22 @@ contract("Canvas", (accounts) => {
      let tokenIds = [50,51,52,53,54,55,56,57,58,7056,
                 60,61,62,63,64,65,66,67,68,69,70];
       await truffleAssert.reverts(
-        canvas.mintTiles(tokenIds, {from: accounts[0]})
+        canvas.mintTiles(tokenIds, accounts[0], {from: accounts[0]})
       );
    })
 
    it("cannot mint an existing tile", async () => {
-     let tokenId = 500;
      let tokenIds = [500];
       await truffleAssert.reverts(
-        canvas.mintTile(tokenId, {from: accounts[3]})
+        canvas.mintTiles(tokenIds, accounts[3], {from: accounts[3]})
       );
       
       await truffleAssert.reverts(
-        canvas.mintTile(tokenId, {from: accounts[1]})
+        canvas.mintTiles(tokenIds, accounts[0], {from: accounts[0]})
       );
 
       await truffleAssert.reverts(
-        canvas.mintTiles(tokenIds, {from: accounts[3]})
+        canvas.mintTiles(tokenIds, accounts[3], {from: accounts[3]})
       );
    })
 
@@ -169,11 +169,11 @@ contract("Canvas", (accounts) => {
      let tokenId = 6000;
      let tokenId2 = 6300;
       await truffleAssert.reverts(
-        canvas.mintTile(tokenId, {from: accounts[3]})
+        canvas.mintTiles([tokenId], accounts[3], {from: accounts[3]})
       );
       
       await truffleAssert.reverts(
-        canvas.mintTile(tokenId2, {from: accounts[0]})
+        canvas.mintTiles([tokenId2], accounts[0], {from: accounts[0]})
       );
    })
 
@@ -190,15 +190,21 @@ contract("Canvas", (accounts) => {
       );
    })
 
-   it("cannot assign invalid tile", async () => {
-     let tokenId = 7056;
-     let tokenId2 = 40000;
+   it("cannot mint as unapproved account", async () => {
       await truffleAssert.reverts(
-        canvas.mintTile(tokenId, {from: accounts[0]})
+        canvas.mintTiles([2345], accounts[2], {from: accounts[2]})
+      );
+   })
+
+   it("cannot assign invalid tile", async () => {
+     let tokenId = [7056];
+     let tokenId2 = [40000];
+      await truffleAssert.reverts(
+        canvas.mintTiles(tokenId, accounts[0], {from: accounts[0]})
       );
 
       await truffleAssert.reverts(
-        canvas.mintTile(tokenId2, {from: accounts[0]})
+        canvas.mintTiles(tokenId2, accounts[0], {from: accounts[0]})
       );
    })
 
