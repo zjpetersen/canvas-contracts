@@ -1,4 +1,4 @@
-const Canvas = artifacts.require("./MosaicTiles.sol");
+const Canvas = artifacts.require("./CryptoCanvas.sol");
 const { assert } = require('chai');
 const truffleAssert = require('truffle-assertions');
 

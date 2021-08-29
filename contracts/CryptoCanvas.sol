@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     available NFTs.  Includes functionality to mint new tiles as well
     as to update the color of the tile.
  */
-contract MosaicTiles is ERC721 {
+contract CryptoCanvas is ERC721 {
     address admin;
     uint maxColorSize;
     string uri;
@@ -28,7 +28,7 @@ contract MosaicTiles is ERC721 {
      * @dev Mints the initial set of tiles on contract creation.
      */
     function _setInitialTiles(uint[] memory tokenIds) private {
-        require(tokenIds.length > 0 && msg.sender == admin);
+        // require(tokenIds.length > 0 && msg.sender == admin);
         for (uint i = 0; i < tokenIds.length; i++) {
             require(_isValidToken(tokenIds[i]));
             _safeMint(msg.sender, tokenIds[i]);
