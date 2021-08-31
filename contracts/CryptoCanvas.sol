@@ -1,18 +1,18 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../../openzeppelin-contracts/contracts/token/ERC2309/ERC2309.sol";
 
 /**
   @dev ERC721, Non-Fungible Token, implementation.  There are 7056
     available NFTs.  Includes functionality to mint new tiles as well
     as to update the color of the tile.
  */
-contract CryptoCanvas is ERC721 {
+contract CryptoCanvas is ERC2309 {
     address admin;
     uint maxColorSize;
     string uri;
-    uint reservedStart;
-    uint reservedEnd;
 
     /**
      * @dev Emitted when `owner` changes the `tokenId` color to `updatedColor`.
@@ -24,64 +24,25 @@ contract CryptoCanvas is ERC721 {
      */ 
     event Reserved(uint start, uint end, address owner);
 
-    constructor(uint start, uint end, string memory _uri) ERC721("Tiles", "TIL") {
+    constructor(uint _tokenCount, string memory _uri) ERC2309("Tiles", "TIL") {
         admin = msg.sender;
         maxColorSize = 5000;
         uri = _uri;
-        _reserveTiles(start, end);
+        _mintConsecutive(_tokenCount); //7056
     }
-    /**
-     * @dev Reserves an initial set of tiles to be minted later
-     */
-     function _reserveTiles(uint start, uint end) private {
-        require(start < end && end < 7056);
-        reservedStart = start;
-        reservedEnd = end;
-        emit Reserved(start, end, msg.sender);
-     }
 
     /**
      * @dev Returns the owner of the tile, or the empty address if no
-     * owner exists 
+     * owner exists or out of range.
      */
     function getOwner(uint tokenId) external view returns (address) {
-        require(_isValidToken(tokenId));
-
-        if (exists(tokenId)) {
+        if (_exists(tokenId)) {
             return ownerOf(tokenId);
         } else {
             return address(0);
         }
     }
 
-    /**
-     * @dev Mints new tiles for all `tokenIds` if it doesn't already exist.
-     * Emits a {Transfer} event for each tokenId.
-     */
-    function mintTiles(uint[] memory tokenIds, address toAddress) external {
-        require(msg.sender == admin || isApprovedForAll(admin, msg.sender), "Must be owner or approved address");
-        require(tokenIds.length > 0 && tokenIds.length <= 20);
-        require(balanceOf(toAddress) + tokenIds.length <= 100);
-        for (uint i = 0; i < tokenIds.length; i++) {
-            require(_isValidToken(tokenIds[i]));
-            require(tokenIds[i] < reservedStart || tokenIds[i] > reservedEnd);
-            _safeMint(toAddress, tokenIds[i]);
-        }
-    }
-
-    /**
-     * @dev Mint reserved tiles.
-     *
-     * Requires caller to be the admin
-     */
-    function mintReserved(uint[] memory tokenIds) external {
-        require(msg.sender == admin);
-        for (uint i = 0; i < tokenIds.length; i++) {
-            require(_isValidToken(tokenIds[i]));
-            _safeMint(msg.sender, tokenIds[i]);
-        }
-
-    }
 
     /**
      * @dev Overriding URI from {ERC721-_baseURI}.  Used to display the NFT metadata.
@@ -122,21 +83,11 @@ contract CryptoCanvas is ERC721 {
         emit ColorBytesUpdated(tokenId, msg.sender, color);
     }
 
-
-    /**
-     * @dev Check if `tokenId` exists.
-     */
-    function exists(uint tokenId) public view returns (bool) {
-        require(_isValidToken(tokenId));
-
-        return _exists(tokenId);
-    }
-
     /**
      * @dev Tokens 0 - 7055 are valid
      */
-    function _isValidToken(uint tokenId) private pure returns (bool) {
-        return tokenId < 7056;
+    function _isValidToken(uint tokenId) private view returns (bool) {
+        return tokenId < _getTokenCount();
     }
 
     function _isOwner(uint tokenId, address addr) private view returns (bool){
