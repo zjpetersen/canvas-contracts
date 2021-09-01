@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
 import "../../openzeppelin-contracts/contracts/token/ERC2309/ERC2309.sol";
 
@@ -18,11 +18,6 @@ contract CryptoCanvas is ERC2309 {
      * @dev Emitted when `owner` changes the `tokenId` color to `updatedColor`.
      */ 
     event ColorBytesUpdated(uint tokenId, address owner, bytes updatedColor);
-
-    /**
-     * @dev Emitted when a tile is reserved on initialization
-     */ 
-    event Reserved(uint start, uint end, address owner);
 
     constructor(uint _tokenCount, string memory _uri) ERC2309("Tiles", "TIL") {
         admin = msg.sender;
