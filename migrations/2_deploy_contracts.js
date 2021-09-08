@@ -23,7 +23,7 @@ module.exports = async (deployer, network) => {
   const tiles = await CryptoCanvas.deployed();
 
   //Write contract addresses to file
-  let filePath = '../../canvas-server/src/contractInfo.config'
+  let filePath = '../canvas-server/src/contractInfo.config'
   let data = tiles.address + "," + "2";
   fs.writeFile(filePath, data, function (err) {
     if (err) throw err;
