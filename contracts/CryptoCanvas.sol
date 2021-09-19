@@ -21,7 +21,7 @@ contract CryptoCanvas is ERC2309 {
 
     constructor(uint _tokenCount, string memory _uri) ERC2309("Tiles", "TIL") {
         admin = msg.sender;
-        maxColorSize = 5000;
+        maxColorSize = 1000000; //1 MB
         uri = _uri;
         _mintConsecutive(_tokenCount); //7056
     }
