@@ -2,7 +2,8 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const path = require("path");
 
 const MNEMONIC = process.env.MNEMONIC;
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY_POLY;
+// const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const NODE_API_KEY = process.env.INFURA_PROJECT_ID || process.env.ALCHEMY_KEY;
 const isInfura = !!process.env.INFURA_KEY;
 
@@ -69,6 +70,7 @@ module.exports = {
         },
         gas: 5000000,
         network_id: 137,
+        gasPrice: 18000000000 //18 gwei
       },
       live: {
         network_id: 1,

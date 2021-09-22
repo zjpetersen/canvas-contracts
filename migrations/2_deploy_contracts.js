@@ -3,20 +3,14 @@ const fs = require('fs');
 
 
 module.exports = async (deployer, network) => {
-  let addr;
-  let proxyRegistrationAddress = ""; //TODO delete this?
-  if (network == 'main' || network === 'main-fork') {
-    addr = deployer.networks.main.from;
-    proxyRegistrationAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
+  if (network == 'main' || network === 'main-fork' || network === '') {
     uri = "http://ethercanvas.io";
   } if (network === 'rinkeby' || network === 'rinkeby-fork') {
-    addr = deployer.networks.rinkeby.from;
-    proxyRegistrationAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
     uri = "http://ethercanvas.io";
-  } else {
-    addr = deployer.networks.development.from;
-    proxyRegistrationAddress = "0xf57b2c51ded3a29e6891aba85459d600256cf317";
+  } if (network === 'development' || network === 'development-fork') {
     uri = "localhost:4000";
+  } else {
+    uri = "https://ethercanvas.io"
   }
   uri = uri + "/tile/metadata/";
   await deployer.deploy(CryptoCanvas, 7056, uri);
