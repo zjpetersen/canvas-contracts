@@ -310,16 +310,16 @@ contract("Canvas", (accounts) => {
        canvas.setColorBytes(TILE_ID_INVALID, expectedColor, { from: accounts[0] }));
    });
 
-   it("cannot set color for very large color", async () => {
+  //  it("cannot set color for very large color", async () => {
 
-     let expectedColor='0x';
-     let invalidLength = 5000;
-     for (let i = 0; i < invalidLength+1; i++) {
-       expectedColor+='abcd';
-     }
-     await truffleAssert.reverts(
-       canvas.setColorBytes(tokenId1, expectedColor, { from: accounts[1] }));
-   });
+  //    let expectedColor='0x';
+  //    let invalidLength = 1000000;
+  //    for (let i = 0; i < invalidLength+1; i++) {
+  //      expectedColor+='abcd';
+  //    }
+  //    await truffleAssert.reverts(
+  //      canvas.setColorBytes(tokenId1, expectedColor, { from: accounts[1] }));
+  //  });
 
    it("can set color for owner", async () => {
      let tx = await canvas.setColorBytes(tokenId1, expectedColor, {from: accounts[1]});
