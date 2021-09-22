@@ -9,7 +9,10 @@ const isInfura = !!process.env.INFURA_KEY;
 const needsNodeAPI =
   process.env.npm_config_argv &&
   (process.env.npm_config_argv.includes("rinkeby") ||
-    process.env.npm_config_argv.includes("live"));
+    process.env.npm_config_argv.includes("live") ||
+    process.env.npm_config_argv.includes("mumbai") ||
+    process.env.npm_config_argv.includes("polygon")
+    );
 
 if ((!MNEMONIC || !NODE_API_KEY) && needsNodeAPI) {
   console.error("Please set a mnemonic and ALCHEMY_KEY or INFURA_KEY.");
@@ -19,6 +22,14 @@ if ((!MNEMONIC || !NODE_API_KEY) && needsNodeAPI) {
 const rinkebyNodeUrl = isInfura
   ? "wss://rinkeby.infura.io/ws/v3/" + NODE_API_KEY
   : "https://eth-rinkeby.alchemyapi.io/v2/" + NODE_API_KEY;
+
+const mumbaiNodeUrl = isInfura
+  ? "https://polygon-mumbai.infura.io/v3/" + NODE_API_KEY
+  : "";
+
+const polygonNodeUrl = isInfura
+  ? "https://polygon-mainnet.infura.io/v3/" + NODE_API_KEY
+  : "";
 
 const mainnetNodeUrl = isInfura
   ? "https://mainnet.infura.io/v3/" + NODE_API_KEY
@@ -43,6 +54,21 @@ module.exports = {
         },
         gas: 5000000,
         network_id: 4,
+      },
+      mumbai: {
+        provider: function () {
+          return new HDWalletProvider(PRIVATE_KEY, mumbaiNodeUrl, 0, 1);
+        },
+        gas: 5000000,
+        network_id: 80001,
+        gasPrice: 1000000000 //1 gwei
+      },
+      polygon: {
+        provider: function () {
+          return new HDWalletProvider(PRIVATE_KEY, polygonNodeUrl, 0, 1);
+        },
+        gas: 5000000,
+        network_id: 137,
       },
       live: {
         network_id: 1,
