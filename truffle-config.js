@@ -6,6 +6,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY_POLY;
 // const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const NODE_API_KEY = process.env.INFURA_PROJECT_ID || process.env.ALCHEMY_KEY;
 const isInfura = !!process.env.INFURA_KEY;
+const POLYGON_SCAN_KEY = process.env.POLYGON_SCAN_KEY;
 
 const needsNodeAPI =
   process.env.npm_config_argv &&
@@ -81,5 +82,11 @@ module.exports = {
         gasPrice: 5000000000,
       },
     },
-  plugins: ["solidity-coverage"]
+  plugins: [
+    "solidity-coverage",
+    "truffle-plugin-verify"
+  ],
+  api_keys: {
+    polygonscan: POLYGON_SCAN_KEY 
+  }
 };
