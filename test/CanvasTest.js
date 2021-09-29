@@ -13,6 +13,57 @@ contract("Canvas", (accounts) => {
     canvas = await Canvas.deployed();
   });
 
+ describe("test minting", async () => {
+   it("can batch mint", async () => {
+    const BATCH_SIZE = 112;
+    // const BATCHES = 63;
+    const BATCHES = 2;
+
+    for (let batchNum = 0; batchNum < BATCHES ; batchNum++) {
+      let start = batchNum * BATCH_SIZE;
+      let end = (batchNum * BATCH_SIZE) + BATCH_SIZE;
+      console.log("Minting tiles " + start + " to " + end);
+      await canvas.batchMint(start, end, {from: accounts[0]});
+    }
+
+     const owner1 = await canvas.getOwner(tokenId1, {from :accounts[0]});
+     const owner2 = await canvas.getOwner(3000, {from :accounts[0]});
+     assert.equal(owner1, accounts[0], "Owner set when minted");
+     assert.equal(owner2, '0x0000000000000000000000000000000000000000', "If not minted, empty address");
+
+   });
+
+   it("can batch mint the end", async () => {
+    await canvas.batchMint(6944, TILE_ID_INVALID, {from: accounts[0]});
+     const owner1 = await canvas.getOwner(7055, {from :accounts[0]});
+     assert.equal(owner1, accounts[0], "Owner set when minted");
+
+   });
+
+   it("cannot batch mint if previously minted", async () => {
+     await truffleAssert.reverts(
+        canvas.batchMint(6944, TILE_ID_INVALID, {from: accounts[0]}));
+   });
+
+   it("cannot batch mint if non admin", async () => {
+     await truffleAssert.reverts(
+        canvas.batchMint(500, 600, {from: accounts[1]}));
+   });
+
+   it("cannot batch mint if start tile higher than end", async () => {
+     await truffleAssert.reverts(
+        canvas.batchMint(600, 500, {from: accounts[1]}));
+
+     await truffleAssert.reverts(
+        canvas.batchMint(600, 600, {from: accounts[1]}));
+   });
+
+   it("cannot batch mint if end tile higher than 7056", async () => {
+     await truffleAssert.reverts(
+        canvas.batchMint(7000, 7057, {from: accounts[1]}));
+   });
+ });
+
  describe("test get owner", async () => {
    it("can get owner", async () => {
      const actualOwner = await canvas.getOwner(tokenId, {from :accounts[0]});

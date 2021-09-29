@@ -2,28 +2,45 @@
 
 pragma solidity ^0.8.0;
 
-import "../../openzeppelin-contracts/contracts/token/ERC2309/ERC2309.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
 
 /**
   @dev ERC721, Non-Fungible Token, implementation.  There are 7056
     available NFTs.  Includes functionality to mint new tiles as well
     as to update the color of the tile.
  */
-contract CryptoCanvas is ERC2309 {
+contract CryptoCanvas is ERC721 {
     address admin;
     uint maxColorSize;
     string uri;
+    uint tokenCount;
 
     /**
      * @dev Emitted when `owner` changes the `tokenId` color to `updatedColor`.
      */ 
     event ColorBytesUpdated(uint tokenId, address owner, bytes updatedColor);
 
-    constructor(uint _tokenCount, string memory _uri) ERC2309("Tiles", "TIL") {
+    constructor(string memory _uri) ERC721("Tiles", "TIL") {
         admin = msg.sender;
         maxColorSize = 1000000; //1 MB
         uri = _uri;
-        _mintConsecutive(_tokenCount); //7056
+        tokenCount = 7056;
+    }
+
+    /**
+     * @dev Mints new tiles for all `tokenIds` if it doesn't already exist.
+     *
+     * Requires sender to be the contract creator and is only called on startup
+     * Emits a {Transfer} event for each tokenId.
+     */
+    function batchMint(uint tokenStart, uint tokenEnd) external {
+        require(msg.sender == admin);
+        require(tokenStart < tokenEnd);
+        require(tokenEnd <= tokenCount); 
+        for (uint i = tokenStart; i < tokenEnd; i++) {
+            _safeMint(msg.sender, i);
+        }
     }
 
     /**
@@ -82,7 +99,7 @@ contract CryptoCanvas is ERC2309 {
      * @dev Tokens 0 - 7055 are valid
      */
     function _isValidToken(uint tokenId) private view returns (bool) {
-        return tokenId < _getTokenCount();
+        return tokenId < tokenCount;
     }
 
     function _isOwner(uint tokenId, address addr) private view returns (bool){

@@ -13,7 +13,7 @@ module.exports = async (deployer, network) => {
     uri = "https://ethercanvas.io"
   }
   uri = uri + "/tile/metadata/";
-  await deployer.deploy(CryptoCanvas, 7056, uri);
+  await deployer.deploy(CryptoCanvas, uri);
   const tiles = await CryptoCanvas.deployed();
 
   //Write contract addresses to file
