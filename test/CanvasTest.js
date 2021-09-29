@@ -52,15 +52,15 @@ contract("Canvas", (accounts) => {
 
    it("cannot batch mint if start tile higher than end", async () => {
      await truffleAssert.reverts(
-        canvas.batchMint(600, 500, {from: accounts[1]}));
+        canvas.batchMint(600, 500, {from: accounts[0]}));
 
      await truffleAssert.reverts(
-        canvas.batchMint(600, 600, {from: accounts[1]}));
+        canvas.batchMint(600, 600, {from: accounts[0]}));
    });
 
    it("cannot batch mint if end tile higher than 7056", async () => {
      await truffleAssert.reverts(
-        canvas.batchMint(7000, 7057, {from: accounts[1]}));
+        canvas.batchMint(7000, 7057, {from: accounts[0]}));
    });
  });
 
@@ -302,7 +302,7 @@ contract("Canvas", (accounts) => {
    it("can get uri", async () => {
      const uri = await canvas.tokenURI(tokenId1, {from :accounts[0]});
      
-     assert.equal(uri, "localhost:4000/tile/metadata/1", "Can access properties correctly");
+     assert.equal(uri, "https://ethercanvas.io/tile/metadata/1", "Can access properties correctly");
    });
  });
 

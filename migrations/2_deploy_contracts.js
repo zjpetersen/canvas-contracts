@@ -7,8 +7,6 @@ module.exports = async (deployer, network) => {
     uri = "http://ethercanvas.io";
   } if (network === 'rinkeby' || network === 'rinkeby-fork') {
     uri = "http://ethercanvas.io";
-  } if (network === 'development' || network === 'development-fork') {
-    uri = "localhost:4000";
   } else {
     uri = "https://ethercanvas.io"
   }
