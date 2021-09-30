@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /**
@@ -10,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     available NFTs.  Includes functionality to mint new tiles as well
     as to update the color of the tile.
  */
-contract CryptoCanvas is ERC721 {
+contract CryptoCanvas is ERC721, Ownable {
     address admin;
     uint maxColorSize;
     string uri;
